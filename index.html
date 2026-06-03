@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LevoCalc — Lean Body Mass Levothyroxine Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN SYSTEM
+   Clinical-elegant: deep slate + warm white
+   + amber accent. Fraunces display, 
+   Instrument Sans body.
+═══════════════════════════════════════════ */
+:root {
+  --ink:       #12213a;
+  --ink2:      #2c3e60;
+  --muted:     #718096;
+  --amber:     #d97706;
+  --amber-lt:  #fef3c7;
+  --teal:      #0f766e;
+  --teal-lt:   #ccfbf1;
+  --red:       #b91c1c;
+  --red-lt:    #fee2e2;
+  --green:     #15803d;
+  --green-lt:  #dcfce7;
+  --blue:      #1d4ed8;
+  --blue-lt:   #dbeafe;
+  --surface:   #f8f7f4;
+  --card:      #ffffff;
+  --border:    #e2e0db;
+  --shadow-sm: 0 1px 3px rgba(18,33,58,.08);
+  --shadow:    0 4px 20px rgba(18,33,58,.10);
+  --shadow-lg: 0 12px 40px rgba(18,33,58,.14);
+  --r:         12px;
+  --r-sm:      8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Instrument Sans', sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.55;
+}
+
+/* ── HEADER ─────────────────────────────── */
+.site-header {
+  background: var(--ink);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -80px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(15,118,110,.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+.site-header::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 30%;
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217,119,6,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.header-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 36px 28px 32px;
+  position: relative; z-index: 1;
+}
+.header-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(15,118,110,.2);
+  border: 1px solid rgba(15,118,110,.4);
+  color: #5eead4;
+  font-size: .7rem; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 20px;
+  margin-bottom: 16px;
+}
+.header-eyebrow span { opacity: .7; }
+h1.site-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+h1.site-title em {
+  font-style: italic;
+  font-weight: 300;
+  color: #5eead4;
+}
+.header-sub {
+  margin-top: 10px;
+  font-size: .9rem;
+  color: rgba(255,255,255,.55);
+  max-width: 600px;
+  line-height: 1.6;
+}
+.header-pills {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 18px;
+}
+.pill {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.6);
+  font-size: .72rem; font-weight: 500;
+  padding: 4px 12px; border-radius: 20px;
+  letter-spacing: .03em;
+}
+.pill.highlight {
+  background: rgba(217,119,6,.2);
+  border-color: rgba(217,119,6,.35);
+  color: #fbbf24;
+}
+
+/* ── LAYOUT ─────────────────────────────── */
+.main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+}
+.span-2 { grid-column: 1 / -1; }
+@media (max-width: 700px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .span-2 { grid-column: 1; }
+}
+
+/* ── SECTION LABEL ──────────────────────── */
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .72rem; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted);
+  margin: 28px 0 14px;
+}
+.section-label::after {
+  content: ''; flex: 1;
+  height: 1px; background: var(--border);
+}
+.section-label .num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: .65rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── CARDS ──────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-head-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.card-head-title {
+  font-size: .8rem; font-weight: 600;
+  color: var(--ink);
+  letter-spacing: .02em;
+}
+.card-head-sub {
+  font-size: .72rem; color: var(--muted);
+  margin-top: 1px;
+}
+.card-body { padding: 18px; }
+
+/* ── FORM ELEMENTS ──────────────────────── */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+label.f-label {
+  display: block;
+  font-size: .72rem; font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin-bottom: 6px;
+}
+label.f-label .hint {
+  font-weight: 400; text-transform: none;
+  letter-spacing: 0; color: var(--muted);
+}
+input[type=number], select {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: .95rem; color: var(--ink);
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+  -moz-appearance: textfield;
+}
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(15,118,110,.10);
+}
+input[readonly] {
+  background: var(--surface);
+  color: var(--muted);
+}
+.hint-text {
+  font-size: .7rem; color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── TOGGLE BUTTONS ─────────────────────── */
+.seg {
+  display: flex; gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.seg-btn {
+  flex: 1; padding: 9px 8px;
+  border: none; background: transparent;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: .88rem; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all .15s;
+  border-right: 1px solid var(--border);
+}
+.seg-btn:last-child { border-right: none; }
+.seg-btn.on {
+  background: var(--ink); color: #fff;
+  font-weight: 600;
+}
+
+/* ── CTA BUTTON ─────────────────────────── */
+.cta {
+  width: 100%;
+  padding: 15px;
+  background: var(--ink);
+  color: #fff;
+  border: none; border-radius: var(--r-sm);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1rem; font-weight: 600;
+  cursor: pointer; letter-spacing: .01em;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  box-shadow: var(--shadow);
+  margin-top: 8px;
+  display: flex; align-items: center;
+  justify-content: center; gap: 10px;
+}
+.cta:hover {
+  background: var(--ink2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+.cta:active { transform: translateY(0); }
+
+/* ── RESULTS SECTION ────────────────────── */
+#results { display: none; }
+
+/* ── DOSE HERO ──────────────────────────── */
+.dose-hero {
+  background: var(--ink);
+  border-radius: var(--r);
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  gap: 24px;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+}
+.dose-divider {
+  background: rgba(255,255,255,.12);
+  height: 100%; min-height: 80px;
+}
+.dose-side { text-align: center; }
+.dose-eyebrow {
+  font-size: .68rem; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.dose-hero .dose-side:first-child .dose-eyebrow { color: #5eead4; }
+.dose-hero .dose-side:last-child  .dose-eyebrow { color: rgba(255,255,255,.35); }
+.dose-number {
+  font-family: 'Fraunces', serif;
+  font-size: 3.4rem; font-weight: 700;
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+.dose-hero .dose-side:first-child .dose-number { color: #fff; }
+.dose-hero .dose-side:last-child  .dose-number {
+  color: rgba(255,255,255,.35);
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+}
+.dose-unit {
+  font-size: .8rem; margin-top: 5px;
+}
+.dose-hero .dose-side:first-child .dose-unit { color: rgba(255,255,255,.55); }
+.dose-hero .dose-side:last-child  .dose-unit { color: rgba(255,255,255,.25); }
+.dose-formula {
+  font-size: .75rem; color: rgba(255,255,255,.4);
+  margin-top: 8px; font-style: italic;
+}
+@media (max-width: 500px) {
+  .dose-hero { grid-template-columns: 1fr; }
+  .dose-divider { display: none; }
+}
+
+/* ── STAT TILES ─────────────────────────── */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 14px 0;
+}
+@media (max-width: 600px) {
+  .tiles { grid-template-columns: repeat(2, 1fr); }
+}
+.tile {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+.tile.t-good   { border-color: var(--teal);  background: var(--teal-lt); }
+.tile.t-warn   { border-color: var(--amber); background: var(--amber-lt); }
+.tile.t-danger { border-color: var(--red);   background: var(--red-lt); }
+.tile-label {
+  font-size: .67rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); margin-bottom: 5px;
+}
+.tile.t-good   .tile-label { color: var(--teal); }
+.tile.t-warn   .tile-label { color: var(--amber); }
+.tile.t-danger .tile-label { color: var(--red); }
+.tile-val {
+  font-family: 'Fraunces', serif;
+  font-size: 1.7rem; font-weight: 600;
+  color: var(--ink);
+}
+.tile.t-good   .tile-val { color: var(--teal); }
+.tile.t-warn   .tile-val { color: var(--amber); }
+.tile.t-danger .tile-val { color: var(--red); }
+.tile-unit {
+  font-size: .68rem; color: var(--muted); margin-top: 2px;
+}
+
+/* ── OVERESTIMATE BAR ───────────────────── */
+.over-section { margin: 16px 0 8px; }
+.over-label {
+  display: flex; justify-content: space-between;
+  align-items: center;
+  font-size: .78rem; font-weight: 500;
+  margin-bottom: 8px;
+}
+.over-pct {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem; font-weight: 600;
+}
+.over-track {
+  height: 12px; border-radius: 6px;
+  background: var(--border); overflow: hidden;
+  position: relative;
+}
+.over-fill {
+  height: 100%; border-radius: 6px;
+  transition: width .9s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+}
+.over-marker-100 {
+  position: absolute; top: -4px;
+  width: 2px; height: calc(100% + 8px);
+  background: var(--red); opacity: .5;
+  left: 50%; /* will be set by JS */
+}
+
+/* ── ALERTS ─────────────────────────────── */
+.alert {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  margin-bottom: 10px;
+  font-size: .85rem; line-height: 1.5;
+}
+.alert:last-child { margin-bottom: 0; }
+.alert-icon { font-size: 1rem; flex-shrink: 0; line-height: 1.5; }
+.alert strong { font-weight: 600; display: block; margin-bottom: 2px; }
+.alert.a-danger { background: var(--red-lt);   border-left: 3px solid var(--red);   color: #7f1d1d; }
+.alert.a-warn   { background: var(--amber-lt); border-left: 3px solid var(--amber); color: #78350f; }
+.alert.a-good   { background: var(--green-lt); border-left: 3px solid var(--green); color: #14532d; }
+.alert.a-info   { background: var(--blue-lt);  border-left: 3px solid var(--blue);  color: #1e3a8a; }
+.alert.a-teal   { background: var(--teal-lt);  border-left: 3px solid var(--teal);  color: #134e4a; }
+
+/* ── SPINA PANEL ────────────────────────── */
+.spina-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 500px) {
+  .spina-grid { grid-template-columns: 1fr; }
+}
+.spina-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 16px;
+}
+.spina-box.sp-low    { border-color: var(--red);   background: var(--red-lt); }
+.spina-box.sp-mid    { border-color: var(--amber); background: var(--amber-lt); }
+.spina-box.sp-normal { border-color: var(--teal);  background: var(--teal-lt); }
+.spina-name {
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); margin-bottom: 2px;
+}
+.spina-what {
+  font-size: .75rem; color: var(--muted);
+  margin-bottom: 10px; font-style: italic;
+}
+.spina-val {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem; font-weight: 600;
+  color: var(--ink);
+}
+.spina-ref {
+  font-size: .7rem; color: var(--muted);
+  margin-top: 4px;
+}
+.spina-bar-wrap { margin-top: 10px; }
+.spina-bar-track {
+  height: 6px; border-radius: 3px;
+  background: rgba(0,0,0,.08); overflow: hidden;
+}
+.spina-bar-fill {
+  height: 100%; border-radius: 3px;
+  transition: width .7s ease;
+}
+.spina-interpretation {
+  font-size: .75rem; font-weight: 600;
+  margin-top: 6px;
+}
+
+/* ── GLP-1 PANEL ────────────────────────── */
+.glp-compare {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-bottom: 14px;
+}
+.glp-col {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px;
+}
+.glp-col.glp-after {
+  background: var(--ink); border-color: var(--ink);
+}
+.glp-col-label {
+  font-size: .69rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); margin-bottom: 10px;
+}
+.glp-col.glp-after .glp-col-label { color: rgba(255,255,255,.4); }
+.glp-row {
+  display: flex; justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+  font-size: .83rem;
+}
+.glp-row:last-child { margin-bottom: 0; }
+.glp-row-label { color: var(--muted); }
+.glp-col.glp-after .glp-row-label { color: rgba(255,255,255,.45); }
+.glp-row-val {
+  font-family: 'Fraunces', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--ink);
+}
+.glp-col.glp-after .glp-row-val { color: #fff; }
+.glp-row-val.lbm-val { color: var(--teal); }
+.glp-col.glp-after .glp-row-val.lbm-val { color: #5eead4; }
+.glp-row-val.trad-val { color: var(--red); }
+.glp-col.glp-after .glp-row-val.trad-val { color: #fca5a5; }
+
+/* ── CLINICAL SUMMARY BOX ───────────────── */
+.summary-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 18px;
+  font-size: .85rem; line-height: 1.7;
+  color: var(--ink2);
+}
+.summary-box h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem; font-weight: 600;
+  color: var(--ink); margin-bottom: 10px;
+}
+.copy-btn {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: .8rem; font-weight: 600;
+  color: var(--ink2); cursor: pointer;
+  transition: all .15s;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.copy-btn:hover {
+  background: var(--ink); color: #fff;
+  border-color: var(--ink);
+}
+
+/* ── RESEARCH NOTE ──────────────────────── */
+.research-note {
+  background: #f0f4ff;
+  border: 1px solid #c7d3f5;
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  font-size: .78rem; line-height: 1.6;
+  color: #2d3d7a;
+  margin-top: 12px;
+}
+.research-note strong { font-weight: 600; }
+
+/* ── FOOTER ─────────────────────────────── */
+footer {
+  background: var(--ink);
+  color: rgba(255,255,255,.35);
+  text-align: center;
+  padding: 24px 20px;
+  font-size: .78rem; line-height: 1.7;
+}
+footer a { color: #5eead4; text-decoration: none; }
+footer strong { color: rgba(255,255,255,.6); }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-eyebrow">
+      ⚕ <span>Clinical Research Tool</span>
+    </div>
+    <h1 class="site-title">
+      LevoCalc — <em>Lean Body Mass</em><br>Levothyroxine Calculator
+    </h1>
+    <p class="header-sub">
+      Calculates LBM-based L-T4 dose (James formula), SPINA deiodinase
+      parameters, and GLP-1 weight-loss dose recalibration.
+      Based on pooled NHANES 2007–2012 (n&thinsp;=&thinsp;8,593 adults).
+    </p>
+    <div class="header-pills">
+      <span class="pill">James LBM Formula</span>
+      <span class="pill">SPINA-GD &amp; SPINA-GT</span>
+      <span class="pill highlight">⚡ GLP-1 Dose Recalculation</span>
+      <span class="pill">Metric &amp; Imperial</span>
+      <span class="pill">GitHub-Ready</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════ MAIN ═══════ -->
+<main class="main">
+
+  <!-- ── SECTION 1: Demographics ── -->
+  <div class="section-label"><div class="num">1</div>Patient Demographics &amp; Anthropometrics</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">📐</div>
+        <div>
+          <div class="card-head-title">Measurement Units</div>
+          <div class="card-head-sub">Select before entering values</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="f-label">Units</label>
+          <div class="seg" id="unitSeg">
+            <button class="seg-btn on" onclick="setU('metric',this)">Metric — kg / cm</button>
+            <button class="seg-btn" onclick="setU('imperial',this)">Imperial — lb / in</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="f-label">Sex</label>
+          <div class="seg" id="sexSeg">
+            <button class="seg-btn" onclick="setS('F',this)">Female</button>
+            <button class="seg-btn on" onclick="setS('M',this)">Male</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="f-label">Age <span class="hint">(years)</span></label>
+          <input type="number" id="age" placeholder="e.g. 58" min="18" max="100">
+          <p class="hint-text">Used for age-stratified SPINA-GD interpretation</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">⚖</div>
+        <div>
+          <div class="card-head-title">Height &amp; Weight</div>
+          <div class="card-head-sub">Required — LBM computed from these</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="grid-2">
+          <div class="field">
+            <label class="f-label" id="wLabel">Weight <span class="hint">(kg)</span></label>
+            <input type="number" id="weight" placeholder="e.g. 92.0" step="0.1">
+          </div>
+          <div class="field">
+            <label class="f-label" id="hLabel">Height <span class="hint">(cm)</span></label>
+            <input type="number" id="height" placeholder="e.g. 168" step="0.5">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="f-label">BMI <span class="hint">(auto)</span></label>
+            <input type="number" id="bmiShow" readonly placeholder="—">
+            <p class="hint-text">Calculated from height &amp; weight</p>
+          </div>
+          <div class="field">
+            <label class="f-label">James LBM <span class="hint">(auto)</span></label>
+            <input type="number" id="lbmShow" readonly placeholder="—">
+            <p class="hint-text">kg — updated live</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SECTION 2: Labs ── -->
+  <div class="section-label"><div class="num">2</div>Thyroid Laboratory Values <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.85rem;margin-left:6px;color:var(--muted);">optional — enables SPINA analysis</span></div>
+  <div class="card span-2">
+    <div class="card-head">
+      <div class="card-head-icon">🧪</div>
+      <div>
+        <div class="card-head-title">Thyroid Function Tests</div>
+        <div class="card-head-sub">Enter any available results — SPINA parameters require FT3 + FT4</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="grid-3">
+        <div class="field">
+          <label class="f-label">TSH <span class="hint">(mIU/L)</span></label>
+          <input type="number" id="tsh" placeholder="e.g. 2.1" step="0.01">
+          <p class="hint-text">Ref: 0.45 – 4.5 mIU/L</p>
+        </div>
+        <div class="field">
+          <label class="f-label">Free T4 <span class="hint">(ng/dL)</span></label>
+          <input type="number" id="ft4" placeholder="e.g. 1.05" step="0.01">
+          <p class="hint-text">Ref: 0.7 – 1.8 ng/dL</p>
+        </div>
+        <div class="field">
+          <label class="f-label">Free T3 <span class="hint">(pg/mL)</span></label>
+          <input type="number" id="ft3" placeholder="e.g. 2.9" step="0.01">
+          <p class="hint-text">Ref: 2.3 – 4.2 pg/mL · required for SPINA-GD</p>
+        </div>
+        <div class="field">
+          <label class="f-label">eGFR <span class="hint">(mL/min/1.73m²)</span></label>
+          <input type="number" id="egfr" placeholder="e.g. 78" step="1">
+          <p class="hint-text">TSH predictor (β=−0.009, p=0.014)</p>
+        </div>
+        <div class="field">
+          <label class="f-label">Anti-TPO <span class="hint">(IU/mL)</span></label>
+          <input type="number" id="antitpo" placeholder="e.g. 48" step="1">
+          <p class="hint-text">Positive &gt;35 IU/mL (β=+0.002, p=0.001)</p>
+        </div>
+        <div class="field">
+          <label class="f-label">HbA1c <span class="hint">(%)</span></label>
+          <input type="number" id="hba1c" placeholder="e.g. 5.8" step="0.1">
+          <p class="hint-text">Metabolic context</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: GLP-1 ── -->
+  <div class="section-label"><div class="num">3</div>GLP-1 Weight-Loss Recalculation <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.85rem;margin-left:6px;color:var(--muted);">optional</span></div>
+  <div class="card span-2">
+    <div class="card-head">
+      <div class="card-head-icon">⚡</div>
+      <div>
+        <div class="card-head-title">Semaglutide / Tirzepatide Weight Loss</div>
+        <div class="card-head-sub">Enter post-GLP-1 weight to recalibrate dose — LBM-based dose is largely stable during fat-predominant weight loss</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="grid-3">
+        <div class="field">
+          <label class="f-label" id="nwLabel">New Weight <span class="hint">(kg)</span></label>
+          <input type="number" id="newWeight" placeholder="e.g. 76.0" step="0.1" oninput="autoLost()">
+        </div>
+        <div class="field">
+          <label class="f-label">% Weight Lost <span class="hint">(auto)</span></label>
+          <input type="number" id="pctLost" readonly placeholder="—">
+        </div>
+        <div class="field">
+          <label class="f-label">New LBM <span class="hint">(auto)</span></label>
+          <input type="number" id="newLBMShow" readonly placeholder="—">
+        </div>
+      </div>
+      <div class="alert a-warn">
+        <span class="alert-icon">⚡</span>
+        <div>
+          <strong>Two GLP-1 mechanisms affect L-T4 exposure simultaneously</strong>
+          (1) Weight loss narrows the TBW–LBM gap, making fixed TBW-based doses relatively excessive.
+          (2) Oral semaglutide increases L-T4 absorption by ~33% via delayed gastric emptying.
+          Monitor TSH at 6–8 weeks after GLP-1 initiation and at every 10% weight-loss milestone.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CALCULATE BUTTON ── -->
+  <button class="cta" style="margin:8px 0 0;" onclick="calc()">
+    ⚕&ensp;Calculate Dose &amp; SPINA Parameters
+  </button>
+
+  <!-- ═══════ RESULTS ═══════ -->
+  <div id="results">
+
+    <!-- DOSE HERO -->
+    <div class="section-label"><div class="num">✓</div>Results</div>
+
+    <div class="dose-hero">
+      <div class="dose-side">
+        <div class="dose-eyebrow">LBM-Based Dose (Recommended)</div>
+        <div class="dose-number" id="rLBM">—</div>
+        <div class="dose-unit">µg / day</div>
+        <div class="dose-formula" id="rLBMformula"></div>
+      </div>
+      <div class="dose-divider"></div>
+      <div class="dose-side">
+        <div class="dose-eyebrow">Traditional Weight-Based Dose</div>
+        <div class="dose-number" id="rTrad">—</div>
+        <div class="dose-unit">µg / day</div>
+        <div class="dose-formula" id="rTradFormula"></div>
+      </div>
+    </div>
+
+    <!-- STAT TILES -->
+    <div class="tiles">
+      <div class="tile" id="tileBMI">
+        <div class="tile-label">BMI</div>
+        <div class="tile-val" id="tBMI">—</div>
+        <div class="tile-unit">kg/m²</div>
+      </div>
+      <div class="tile" id="tileLBM">
+        <div class="tile-label">James LBM</div>
+        <div class="tile-val" id="tLBM">—</div>
+        <div class="tile-unit">kg</div>
+      </div>
+      <div class="tile" id="tileOver">
+        <div class="tile-label">Overestimate</div>
+        <div class="tile-val" id="tOver">—</div>
+        <div class="tile-unit">% excess</div>
+      </div>
+      <div class="tile" id="tileTSH">
+        <div class="tile-label">TSH Status</div>
+        <div class="tile-val" id="tTSH" style="font-size:1rem;">—</div>
+        <div class="tile-unit" id="tTSHval">—</div>
+      </div>
+    </div>
+
+    <!-- OVERESTIMATE BAR -->
+    <div class="card">
+      <div class="card-body">
+        <div class="over-section">
+          <div class="over-label">
+            <span style="font-size:.78rem;color:var(--muted);">LBM-based dose (correct)</span>
+            <span class="over-pct" id="overPctLabel">—</span>
+            <span style="font-size:.78rem;color:var(--muted);">Traditional dose (excess shown)</span>
+          </div>
+          <div class="over-track">
+            <div class="over-fill" id="overFill" style="width:0%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:4px;">
+            <span>0%</span><span>50%</span><span>100% (doubles)</span><span>150%</span><span>200% (triples)</span>
+          </div>
+        </div>
+        <div id="doseAlerts"></div>
+      </div>
+    </div>
+
+    <!-- SPINA CARD -->
+    <div class="card" id="spinaCard" style="display:none;">
+      <div class="card-head">
+        <div class="card-head-icon">🔬</div>
+        <div>
+          <div class="card-head-title">SPINA Structural Parameters</div>
+          <div class="card-head-sub">Dietrich et al. Front Endocrinol 2016;7:57 · Distinguishes dose problem from conversion problem</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="spina-grid">
+          <div class="spina-box" id="gdBox">
+            <div class="spina-name">SPINA-GD</div>
+            <div class="spina-what">Peripheral deiodinase activity — T4→T3 conversion</div>
+            <div class="spina-val" id="gdVal">—</div>
+            <div class="spina-ref">nmol/s &nbsp;·&nbsp; Reference range: 20 – 60</div>
+            <div class="spina-bar-wrap">
+              <div class="spina-bar-track">
+                <div class="spina-bar-fill" id="gdBarFill" style="width:0%;"></div>
+              </div>
+            </div>
+            <div class="spina-interpretation" id="gdInterp"></div>
+          </div>
+          <div class="spina-box" id="gtBox">
+            <div class="spina-name">SPINA-GT</div>
+            <div class="spina-what">Thyroid secretory capacity — T4 supply to the body</div>
+            <div class="spina-val" id="gtVal">—</div>
+            <div class="spina-ref">pmol/s &nbsp;·&nbsp; Reference range: 1.4 – 8.7</div>
+            <div class="spina-bar-wrap">
+              <div class="spina-bar-track">
+                <div class="spina-bar-fill" id="gtBarFill" style="width:0%;background:var(--ink2);"></div>
+              </div>
+            </div>
+            <div class="spina-interpretation" id="gtInterp"></div>
+          </div>
+        </div>
+        <div id="spinaAlerts"></div>
+        <div class="research-note">
+          <strong>NHANES 2007–2012 population reference (n = 8,039 euthyroid adults):</strong>
+          SPINA-GD median 44.9 nmol/s [IQR 39.7–50.4] · SPINA-GT median 2.16 pmol/s [IQR 1.68–2.82].<br>
+          In 545 L-T4-treated adults, SPINA-GD was <strong>23.8% lower</strong>
+          (d = 1.037, p = 2.6×10⁻¹²⁷) while SPINA-GT was preserved (d = 0.195),
+          localising the therapeutic deficit to peripheral T4→T3 conversion.
+          The deficit deepens with age: 10% in those &lt;40 years, 17% at 40–59, 25% at ≥60.
+        </div>
+      </div>
+    </div>
+
+    <!-- GLP-1 RESULTS -->
+    <div class="card" id="glpResults" style="display:none;">
+      <div class="card-head">
+        <div class="card-head-icon">⚡</div>
+        <div>
+          <div class="card-head-title">GLP-1 Dose Recalibration</div>
+          <div class="card-head-sub">Before vs after weight loss</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="glp-compare">
+          <div class="glp-col">
+            <div class="glp-col-label">Before Weight Loss</div>
+            <div class="glp-row">
+              <span class="glp-row-label">LBM dose</span>
+              <span class="glp-row-val lbm-val" id="gBefore_lbm">—</span>
+            </div>
+            <div class="glp-row">
+              <span class="glp-row-label">Traditional dose</span>
+              <span class="glp-row-val trad-val" id="gBefore_trad">—</span>
+            </div>
+            <div class="glp-row">
+              <span class="glp-row-label">Body weight</span>
+              <span class="glp-row-val" id="gBefore_wt">—</span>
+            </div>
+            <div class="glp-row">
+              <span class="glp-row-label">LBM</span>
+              <span class="glp-row-val" id="gBefore_lbmkg">—</span>
+            </div>
+          </div>
+          <div class="glp-col glp-after">
+            <div class="glp-col-label">After Weight Loss</div>
+            <div class="glp-row">
+              <span class="glp-row-label">LBM dose</span>
+              <span class="glp-row-val lbm-val" id="gAfter_lbm">—</span>
+            </div>
+            <div class="glp-row">
+              <span class="glp-row-label">Traditional dose</span>
+              <span class="glp-row-val trad-val" id="gAfter_trad">—</span>
+            </div>
+            <div class="glp-row">
+              <span class="glp-row-label">Body weight</span>
+              <span class="glp-row-val" id="gAfter_wt">—</span>
+            </div>
+            <div class="glp-row">
+              <span class="glp-row-label">LBM</span>
+              <span class="glp-row-val" id="gAfter_lbmkg">—</span>
+            </div>
+          </div>
+        </div>
+        <div id="glpAlerts"></div>
+      </div>
+    </div>
+
+    <!-- CLINICAL SUMMARY -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">📋</div>
+        <div>
+          <div class="card-head-title">Clinical Summary</div>
+          <div class="card-head-sub">Copy to clinical note</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="summary-box">
+          <h3>Levothyroxine Dose Assessment</h3>
+          <div id="summaryText"></div>
+        </div>
+        <button class="copy-btn" onclick="copySummary()">📋 Copy to clipboard</button>
+        <div class="research-note">
+          <strong>Source:</strong>
+          Pooled NHANES 2007–2012 (cycles E, F, G). Cohort B (L-T4 treated) n = 545.
+          James LBM: <em>J Clin Pharmacol</em> 1976.
+          SPINA parameters: Dietrich et al. <em>Front Endocrinol</em> 2016;7:57.
+          Nomogram: manuscript under review.<br>
+          <strong>⚠ For clinical discussion only.</strong>
+          All dosing decisions require clinical assessment and TSH monitoring.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /results -->
+</main>
+
+<footer>
+  <strong>LevoCalc v2</strong> — LBM-Based Levothyroxine Dose Calculator<br>
+  Based on: <em>Levothyroxine Dose Adjustment in Obesity and Weight Loss: A Lean Body Mass–Based Framework</em>
+  (NHANES 2007–2012, n = 8,593) · Manuscript under review<br>
+  <a href="https://github.com" target="_blank">View on GitHub</a> &nbsp;·&nbsp;
+  Open source · For clinical discussion only · © 2026
+</footer>
+
+<script>
+// ── State ──────────────────────────────────────────────
+let units = 'metric', sex = 'M';
+
+// ── Segment toggles ────────────────────────────────────
+function seg(id, val, btn) {
+  document.querySelectorAll(`#${id} .seg-btn`)
+    .forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+function setU(u, btn) {
+  units = u; seg('unitSeg', u, btn);
+  const imp = u === 'imperial';
+  document.getElementById('wLabel').innerHTML =
+    `Weight <span class="hint">(${imp?'lb':'kg'})</span>`;
+  document.getElementById('hLabel').innerHTML =
+    `Height <span class="hint">(${imp?'in':'cm'})</span>`;
+  document.getElementById('nwLabel').innerHTML =
+    `New Weight <span class="hint">(${imp?'lb':'kg'})</span>`;
+  liveUpdate();
+}
+function setS(s, btn) {
+  sex = s; seg('sexSeg', s, btn);
+  liveUpdate();
+}
+
+// ── James LBM ──────────────────────────────────────────
+function jlbm(wkg, hcm, s) {
+  const wh2 = Math.pow(wkg / hcm, 2);
+  return s === 'M' ? 1.10*wkg - 128*wh2 : 1.07*wkg - 148*wh2;
+}
+function toKg(v)  { return units==='imperial' ? v*0.453592 : v; }
+function toCm(v)  { return units==='imperial' ? v*2.54     : v; }
+function fmtW(kg) { return units==='imperial' ? (kg/0.453592).toFixed(1)+' lb' : kg.toFixed(1)+' kg'; }
+function round125(d) { return Math.round(d/12.5)*12.5; }
+
+// ── Live BMI / LBM preview ─────────────────────────────
+['weight','height'].forEach(id =>
+  document.getElementById(id).addEventListener('input', liveUpdate));
+
+function liveUpdate() {
+  const wR = +document.getElementById('weight').value;
+  const hR = +document.getElementById('height').value;
+  if (!wR || !hR) return;
+  const wkg = toKg(wR), hcm = toCm(hR);
+  const bmi = wkg/Math.pow(hcm/100,2);
+  const lbm = jlbm(wkg, hcm, sex);
+  document.getElementById('bmiShow').value = bmi.toFixed(1);
+  document.getElementById('lbmShow').value = lbm > 0 ? lbm.toFixed(1) : '—';
+}
+
+// ── Auto % lost ────────────────────────────────────────
+function autoLost() {
+  const wR  = +document.getElementById('weight').value;
+  const nwR = +document.getElementById('newWeight').value;
+  if (!wR || !nwR) return;
+  const wkg = toKg(wR), nwkg = toKg(nwR);
+  if (nwkg > 0 && nwkg < wkg) {
+    document.getElementById('pctLost').value = ((1-nwkg/wkg)*100).toFixed(1);
+    const newLBM = jlbm(nwkg, toCm(+document.getElementById('height').value), sex);
+    document.getElementById('newLBMShow').value = newLBM > 0 ? newLBM.toFixed(1) : '—';
+  }
+}
+
+// ── SPINA equations ────────────────────────────────────
+const C = {
+  bt:1.1e-6, at:0.1, Dt:2.75,
+  K41:2e10, K42:2e8,
+  b31:8e-6, a31:0.026, KM1:500e-9, K30:2e9,
+  TBG:300e-9, TBPA:4.5e-6,
+  mwT4:776.87, mwT3:650.98
+};
+function GD(ft4, ft3) {
+  const f4 = ft4*1e-9*10/C.mwT4;
+  const f3 = ft3*1e-12*1e3/C.mwT3;
+  return C.b31*(C.KM1+f4)*(1+C.K30*C.TBG)*f3/(C.a31*f4)*1e9;
+}
+function GT(tsh, ft4) {
+  const f4 = ft4*1e-9*10/C.mwT4;
+  return C.bt*(C.Dt+tsh)*(1+C.K41*C.TBG+C.K42*C.TBPA)*f4/(C.at*tsh)*1e12;
+}
+
+// ── Colour helpers ─────────────────────────────────────
+function overCol(p) {
+  return p >= 100 ? '#b91c1c' : p >= 60 ? '#d97706' : '#15803d';
+}
+
+// ── Main calculate ─────────────────────────────────────
+function calc() {
+  const wR = +document.getElementById('weight').value;
+  const hR = +document.getElementById('height').value;
+  if (!wR || !hR) { alert('Please enter height and weight.'); return; }
+
+  const wkg = toKg(wR), hcm = toCm(hR);
+  const age = +document.getElementById('age').value || null;
+  const tsh = +document.getElementById('tsh').value || null;
+  const ft4 = +document.getElementById('ft4').value || null;
+  const ft3 = +document.getElementById('ft3').value || null;
+  const egfr    = +document.getElementById('egfr').value    || null;
+  const antitpo = +document.getElementById('antitpo').value || null;
+  const hba1c   = +document.getElementById('hba1c').value   || null;
+  const nwR = +document.getElementById('newWeight').value || null;
+
+  const bmi  = wkg / Math.pow(hcm/100, 2);
+  const lbm  = jlbm(wkg, hcm, sex);
+  const ld   = lbm * 1.6;
+  const td   = wkg * 1.6;
+  const lr   = round125(ld);
+  const tr   = round125(td);
+  const exc  = td - ld;
+  const pct  = exc / ld * 100;
+
+  // ── Dose hero ────────────────────────────────────────
+  document.getElementById('rLBM').textContent = lr;
+  document.getElementById('rTrad').textContent = tr;
+  document.getElementById('rLBMformula').textContent =
+    `LBM ${lbm.toFixed(1)} kg × 1.6 µg/kg → ${ld.toFixed(1)} µg → rounded`;
+  document.getElementById('rTradFormula').textContent =
+    `${wkg.toFixed(1)} kg × 1.6 µg/kg = ${td.toFixed(1)} µg`;
+
+  // ── Tiles ────────────────────────────────────────────
+  const tileBMI = document.getElementById('tileBMI');
+  document.getElementById('tBMI').textContent = bmi.toFixed(1);
+  tileBMI.className = 'tile' +
+    (bmi>=40?' t-danger': bmi>=30?' t-warn':' t-good');
+
+  document.getElementById('tLBM').textContent = lbm.toFixed(1);
+  document.getElementById('tileLBM').className = 'tile t-good';
+
+  const tileOver = document.getElementById('tileOver');
+  document.getElementById('tOver').textContent = pct.toFixed(0)+'%';
+  tileOver.className = 'tile' +
+    (pct>=100?' t-danger': pct>=50?' t-warn':' t-good');
+
+  if (tsh) {
+    const tileTSH = document.getElementById('tileTSH');
+    const st = tsh < 0.45 ? 'Suppressed' : tsh > 4.5 ? 'Elevated' : 'In Range';
+    document.getElementById('tTSH').textContent = st;
+    document.getElementById('tTSHval').textContent = tsh + ' mIU/L';
+    tileTSH.className = 'tile' +
+      (tsh<0.45?' t-danger': tsh>4.5?' t-warn':' t-good');
+  } else {
+    document.getElementById('tTSH').textContent = 'Not entered';
+    document.getElementById('tTSHval').textContent = '—';
+    document.getElementById('tileTSH').className = 'tile';
+  }
+
+  // ── Overestimate bar ─────────────────────────────────
+  // bar represents 0–200%, fill = pct/200*100%
+  const barW = Math.min(pct/200*100, 100);
+  const fill = document.getElementById('overFill');
+  fill.style.width = barW + '%';
+  fill.style.background = overCol(pct);
+  document.getElementById('overPctLabel').textContent =
+    pct.toFixed(0) + '% overestimate';
+  document.getElementById('overPctLabel').style.color = overCol(pct);
+
+  // ── Dose alerts ──────────────────────────────────────
+  let da = '';
+  if (pct >= 100) {
+    da += `<div class="alert a-danger"><span class="alert-icon">🚨</span><div>
+      <strong>Critical overestimate at this BMI (${pct.toFixed(0)}%)</strong>
+      The traditional formula prescribes ${exc.toFixed(0)}&thinsp;µg/day more than the LBM-based estimate —
+      more than double. Chronic over-replacement at this level carries documented risks of
+      atrial fibrillation, osteoporosis, and cardiac stress.
+    </div></div>`;
+  } else if (pct >= 60) {
+    da += `<div class="alert a-warn"><span class="alert-icon">⚠</span><div>
+      <strong>Substantial overestimate (${pct.toFixed(0)}%)</strong>
+      Weight-based dosing exceeds the LBM estimate by ${exc.toFixed(0)}&thinsp;µg/day.
+      LBM-based dosing is strongly recommended.
+    </div></div>`;
+  } else {
+    da += `<div class="alert a-good"><span class="alert-icon">✓</span><div>
+      <strong>Moderate overestimate (${pct.toFixed(0)}%)</strong>
+      Even in the overweight–obese I range, a clinically meaningful excess exists.
+      LBM dose: <strong>${lr}&thinsp;µg/day</strong>.
+    </div></div>`;
+  }
+  if (sex === 'F' && bmi > 35) {
+    da += `<div class="alert a-info"><span class="alert-icon">♀</span><div>
+      <strong>Female LBM plateau effect (BMI > 35)</strong>
+      Female LBM peaks around BMI 35–36 and then declines as fat replaces lean tissue.
+      The overestimate therefore continues rising steeply in obese women
+      while it grows more slowly in men. At BMI 40 the overestimate is ~109% for women
+      vs ~70% for men (same height).
+    </div></div>`;
+  }
+  if (tsh !== null && tsh < 0.45) {
+    da += `<div class="alert a-danger"><span class="alert-icon">🚨</span><div>
+      <strong>TSH suppressed (${tsh}&thinsp;mIU/L) — likely over-treatment</strong>
+      Consider reducing L-T4 toward the LBM-based estimate (${lr}&thinsp;µg/day).
+      In NHANES, 15.2% of treated patients had suppressed TSH consistent with dose excess.
+    </div></div>`;
+  } else if (tsh !== null && tsh > 4.5) {
+    da += `<div class="alert a-warn"><span class="alert-icon">⚠</span><div>
+      <strong>TSH elevated (${tsh}&thinsp;mIU/L)</strong>
+      Suggests under-replacement or poor adherence.
+      Review compliance, absorption factors, and dose adequacy.
+    </div></div>`;
+  }
+  if (egfr !== null && egfr < 60) {
+    da += `<div class="alert a-info"><span class="alert-icon">🫘</span><div>
+      <strong>CKD (eGFR ${egfr})</strong>
+      Reduced renal function independently predicts higher TSH (β=−0.009, p=0.014 in NHANES regression).
+      Monitor TSH more closely and titrate carefully.
+    </div></div>`;
+  }
+  if (antitpo !== null && antitpo > 35) {
+    da += `<div class="alert a-info"><span class="alert-icon">🔬</span><div>
+      <strong>Anti-TPO positive (${antitpo}&thinsp;IU/mL)</strong>
+      Active thyroid autoimmunity independently predicts higher TSH requirement
+      (β=+0.002, p=0.001 in NHANES regression), likely reflecting residual thyroid function.
+    </div></div>`;
+  }
+  document.getElementById('doseAlerts').innerHTML = da;
+
+  // ── SPINA ────────────────────────────────────────────
+  if (ft4 && ft3) {
+    document.getElementById('spinaCard').style.display = 'block';
+    const gd = GD(ft4, ft3);
+    const gt = tsh ? GT(tsh, ft4) : null;
+
+    // GD
+    document.getElementById('gdVal').textContent = gd.toFixed(2);
+    const gdPct = Math.min(gd/60*100, 100);
+    const gdFill = document.getElementById('gdBarFill');
+    gdFill.style.width = gdPct + '%';
+    const gdBox = document.getElementById('gdBox');
+    let gdInterp = '', gdClass = '';
+    if (gd < 20) {
+      gdClass = 'spina-box sp-low';
+      gdFill.style.background = '#b91c1c';
+      gdInterp = `<span style="color:var(--red)">▼ Below range — severe conversion impairment</span>`;
+    } else if (gd < 30) {
+      gdClass = 'spina-box sp-mid';
+      gdFill.style.background = '#d97706';
+      gdInterp = `<span style="color:var(--amber)">▼ Low-normal — ${((44.9-gd)/44.9*100).toFixed(0)}% below euthyroid median</span>`;
+    } else {
+      gdClass = 'spina-box sp-normal';
+      gdFill.style.background = 'var(--teal)';
+      gdInterp = `<span style="color:var(--teal)">✓ Within reference range</span>`;
+    }
+    gdBox.className = gdClass;
+    document.getElementById('gdInterp').innerHTML = gdInterp;
+
+    // GT
+    if (gt !== null) {
+      document.getElementById('gtVal').textContent = gt.toFixed(3);
+      const gtPct = Math.min(Math.max((gt-1.4)/(8.7-1.4)*100, 0), 100);
+      const gtFill = document.getElementById('gtBarFill');
+      gtFill.style.width = gtPct + '%';
+      const gtBox = document.getElementById('gtBox');
+      let gtInterp = '', gtClass = '';
+      if (gt >= 1.4 && gt <= 8.7) {
+        gtClass = 'spina-box sp-normal';
+        gtFill.style.background = 'var(--teal)';
+        gtInterp = `<span style="color:var(--teal)">✓ T4 supply adequate</span>`;
+      } else if (gt < 1.4) {
+        gtClass = 'spina-box sp-low';
+        gtFill.style.background = '#b91c1c';
+        gtInterp = `<span style="color:var(--red)">▼ Below range — review FT4 level</span>`;
+      } else {
+        gtClass = 'spina-box sp-mid';
+        gtFill.style.background = '#d97706';
+        gtInterp = `<span style="color:var(--amber)">▲ Above range — possible over-supply</span>`;
+      }
+      gtBox.className = gtClass;
+      document.getElementById('gtInterp').innerHTML = gtInterp;
+    }
+
+    // SPINA interpretation alert
+    let sa = '';
+    if (ft4 && ft3 && gt !== null) {
+      const gtOK = gt >= 1.4 && gt <= 8.7;
+      const gdLow = gd < 35;
+      if (gtOK && gdLow) {
+        sa += `<div class="alert a-teal"><span class="alert-icon">🎯</span><div>
+          <strong>Localisation: conversion defect, not supply defect</strong>
+          SPINA-GT is normal (T4 supply is adequate).
+          SPINA-GD is reduced (peripheral T4→T3 conversion is impaired).
+          This is the exact pattern seen in 545 L-T4-treated adults in NHANES (d=1.037).
+          If symptoms persist despite adequate TSH, consider checking FT3 and evaluating
+          for DIO2 polymorphism or T3 supplementation.
+        </div></div>`;
+      }
+    }
+    // Age-stratified GD warning
+    if (age && age >= 60 && gd < 40) {
+      sa += `<div class="alert a-warn"><span class="alert-icon">👴</span><div>
+        <strong>Age ≥ 60 — deepened conversion impairment expected</strong>
+        In NHANES, L-T4-treated patients aged ≥60 showed 24–25% lower SPINA-GD
+        vs euthyroid peers. Your SPINA-GD of ${gd.toFixed(1)} nmol/s is
+        ${((44.9-gd)/44.9*100).toFixed(0)}% below the euthyroid median.
+        Elderly hypothyroid patients face both lower LBM (larger dosing overestimate)
+        and reduced deiodinase activity — both factors require attention.
+      </div></div>`;
+    }
+    document.getElementById('spinaAlerts').innerHTML = sa;
+  } else {
+    document.getElementById('spinaCard').style.display = 'none';
+  }
+
+  // ── GLP-1 recalculation ──────────────────────────────
+  const nwkg = nwR ? toKg(nwR) : null;
+  if (nwkg && nwkg > 0 && nwkg < wkg) {
+    document.getElementById('glpResults').style.display = 'block';
+    const newLBM  = jlbm(nwkg, hcm, sex);
+    const newLBMd = round125(newLBM * 1.6);
+    const newTrad = round125(nwkg * 1.6);
+    const pctLost = (1 - nwkg/wkg)*100;
+
+    document.getElementById('gBefore_lbm').textContent  = lr + ' µg/day';
+    document.getElementById('gAfter_lbm').textContent   = newLBMd + ' µg/day';
+    document.getElementById('gBefore_trad').textContent = tr + ' µg/day';
+    document.getElementById('gAfter_trad').textContent  = newTrad + ' µg/day';
+    document.getElementById('gBefore_wt').textContent   = fmtW(wkg);
+    document.getElementById('gAfter_wt').textContent    = fmtW(nwkg);
+    document.getElementById('gBefore_lbmkg').textContent = lbm.toFixed(1) + ' kg';
+    document.getElementById('gAfter_lbmkg').textContent  = newLBM.toFixed(1) + ' kg';
+
+    let ga = '';
+    const diff = Math.abs(newLBMd - lr);
+    if (diff <= 12.5) {
+      ga += `<div class="alert a-good"><span class="alert-icon">💡</span><div>
+        <strong>LBM-based dose is stable despite ${pctLost.toFixed(1)}% weight loss (${newLBMd} µg, was ${lr} µg)</strong>
+        This confirms the key finding: LBM-based dosing remains essentially constant during
+        GLP-1-induced weight loss because lean mass is largely preserved.
+        The traditional dose falls from ${tr} to ${newTrad} µg — but even ${newTrad} µg
+        exceeds the LBM-based estimate by ${(newTrad - newLBMd).toFixed(0)} µg/day.
+      </div></div>`;
+    } else {
+      ga += `<div class="alert a-warn"><span class="alert-icon">⚠</span><div>
+        <strong>LBM dose changes by ${diff} µg after ${pctLost.toFixed(1)}% weight loss</strong>
+        Recheck TSH and adjust dose to ${newLBMd} µg/day.
+      </div></div>`;
+    }
+    if (pctLost >= 10) {
+      ga += `<div class="alert a-warn"><span class="alert-icon">📋</span><div>
+        <strong>≥10% weight-loss milestone — TSH reassessment due</strong>
+        Per GLP-1 monitoring protocol: measure TSH now.
+        Target: 1.0–3.0 mIU/L. Reduce dose if TSH &lt;0.45 mIU/L.
+      </div></div>`;
+    }
+    document.getElementById('glpAlerts').innerHTML = ga;
+  } else {
+    document.getElementById('glpResults').style.display = 'none';
+  }
+
+  // ── Clinical summary ─────────────────────────────────
+  const sexLabel = sex === 'F' ? 'Female' : 'Male';
+  const bmiCat = bmi >= 40 ? 'Obese class III'
+               : bmi >= 35 ? 'Obese class II'
+               : bmi >= 30 ? 'Obese class I'
+               : bmi >= 25 ? 'Overweight' : 'Normal weight';
+  let sum = `${sexLabel} patient${age ? ', age '+age : ''}. `;
+  sum += `Height ${hcm.toFixed(0)} cm, weight ${wkg.toFixed(1)} kg (BMI ${bmi.toFixed(1)}, ${bmiCat}). `;
+  sum += `James lean body mass: ${lbm.toFixed(1)} kg. `;
+  sum += `<br><br><strong>Recommended L-T4 starting dose: ${lr} µg/day</strong> `;
+  sum += `(James LBM × 1.6 µg/kg/day = ${ld.toFixed(1)} µg, rounded to nearest 12.5 µg tablet). `;
+  sum += `Weight-based formula would suggest ${tr} µg/day — a ${pct.toFixed(0)}% overestimate `;
+  sum += `(${exc.toFixed(0)} µg/day excess). `;
+  if (tsh) {
+    const tshS = tsh < 0.45 ? 'suppressed (below 0.45)' : tsh > 4.5 ? 'elevated (above 4.5)' : 'within reference range';
+    sum += `<br>TSH: ${tsh} mIU/L (${tshS}). `;
+  }
+  if (ft4 && ft3) {
+    const gd = GD(ft4, ft3);
+    sum += `SPINA-GD: ${gd.toFixed(1)} nmol/s (ref 20–60; euthyroid median 44.9). `;
+    if (tsh) {
+      const gt = GT(tsh, ft4);
+      sum += `SPINA-GT: ${gt.toFixed(3)} pmol/s (ref 1.4–8.7). `;
+    }
+  }
+  sum += `<br><strong>Plan:</strong> Recheck TSH at 6–8 weeks. Target TSH 1.0–3.0 mIU/L.`;
+  if (nwkg && nwkg < wkg) {
+    const newLBMd = round125(jlbm(nwkg, hcm, sex) * 1.6);
+    sum += ` After GLP-1-related weight loss to ${nwkg.toFixed(1)} kg: recalibrated LBM-based dose ${newLBMd} µg/day.`;
+  }
+  document.getElementById('summaryText').innerHTML = sum;
+
+  // Show results
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── Copy summary ───────────────────────────────────────
+function copySummary() {
+  const el = document.getElementById('summaryText');
+  const text = el.innerText || el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.innerHTML = '📋 Copy to clipboard', 2000);
+  });
+}
+</script>
+</body>
+</html>
