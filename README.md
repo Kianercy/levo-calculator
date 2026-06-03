@@ -25,10 +25,17 @@ Dual mechanism warning (weight loss + absorption effect)
 Results panels
 
 Dose hero: LBM dose (recommended) vs traditional dose side by side, traditional dose with strikethrough
+
 4 stat tiles: BMI, LBM, % overestimate, TSH status — colour-coded green/amber/red
+
 Animated overestimate bar (0–200% scale)
+
 Contextual alerts: dosing danger zone, female LBM plateau, TSH suppression, CKD, anti-TPO
+
 SPINA-GD/GT cards with bars, colour-coded interpretation, localisation logic (GT normal + GD low = conversion defect)
+
 Age ≥60 deiodinase warning from NHANES regression
+
 GLP-1 before/after comparison with 10% milestone flag
+
 Clinical summary with one-click copy to clipboard
