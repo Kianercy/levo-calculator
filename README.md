@@ -1,7 +1,8 @@
 # levo-calculator
 Lean Base Mass L-T4 starting dose
 
-#What the calculator includes
+What the calculator includes:
+
 Section 1 — Demographics & Anthropometrics
 
 Metric/imperial toggle (kg/cm or lb/in)
